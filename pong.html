@@ -1,0 +1,88 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="/src/css/pong.css" />
+    <link rel="stylesheet" href="./src/css/main.css" />
+    <link rel="icon" href="./src/images/circle_of_death.jpg" />
+  </head>
+  <body>
+    <h1 id="log">Hello1</h1>
+    <canvas id="cnvs" width="512" height="512"></canvas>
+    <script>
+      class Screen {
+        constructor(height, width, canvas) {
+          this.height = height;
+          this.width = width;
+          this.size = height * width;
+          this.canvas = canvas;
+        }
+      }
+      class Renderer {
+        constructor(screen, ctx) {
+          this.screen = screen;
+          this.ctx = ctx;
+          this.buffer = new Uint8Array(4 * screen.size);
+          let i = 0;
+          for (let rows = 0; rows < 8; rows++) {
+            if (rows % 2) {
+              for (let p = 0; (p < screen.width * 64 && i < 4 * screen.size); i += 4) {
+                p++;
+                this.buffer[i + 0] = 0; // red
+                this.buffer[i + 1] = 0; // green
+                this.buffer[i + 2] = 255; // blue
+                this.buffer[i + 3] = 255; // alpha
+              }
+            } else {
+              for (let p = 0; (p < screen.width * 64 && i < 4 * screen.size); i += 4) {
+                p++;
+                this.buffer[i + 0] = 255; // red
+                this.buffer[i + 1] = 0; // green
+                this.buffer[i + 2] = 0; // blue
+                this.buffer[i + 3] = 255; // alpha
+              }
+            }
+          }
+          this.image_data = new ImageData(new Uint8ClampedArray(this.buffer), this.screen.width, this.screen.height);
+          this.buffer_i32 = new Uint32Array(this.buffer);
+        }
+        clear() {
+          // Color the screen black
+          this.ctx.clearRect(0, 0, this.screen.width, this.screen.height);
+        }
+        render() {
+          this.ctx.putImageData(this.image_data, 0, 0);
+          requestAnimationFrame(() => {
+            this.ctx.putImageData(this.image_data, 0, 0);
+          });
+        }
+        generateCubes() {
+          for (let i = 0; i < 3000 * 4; i += 4) {
+            let temp = Math.floor(Math.random() * this.screen.size);
+            this.buffer_i32[i] = temp;
+            temp = Math.floor(Math.random() * this.screen.size);
+            this.buffer_i32[i + 1] = temp;
+            temp = Math.round(Math.random() * 4) - 2;
+            this.buffer_i32[i + 2] = temp;
+            temp = Math.round(Math.random() * 4) - 2;
+            this.buffer_i32[i + 3] = temp;
+          }
+        }
+      }
+      onload = () => {
+        console.log("Loaded");
+        const canvas = document.getElementById("cnvs");
+        const screen = new Screen(512, 512, canvas);
+        const ctx = canvas.getContext("2d");
+
+        const renderer = new Renderer(screen, ctx);
+
+        //renderer.generateCubes();
+        console.log("generated cubes");
+        renderer.render();
+      };
+    </script>
+  </body>
+</html>

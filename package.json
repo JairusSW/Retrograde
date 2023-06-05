@@ -1,0 +1,21 @@
+{
+  "name": "retrograde",
+  "version": "0.1.0",
+  "description": "",
+  "contributors": [],
+  "license": "MIT",
+  "scripts": {},
+  "devDependencies": {
+    "prettier": "^2.8.7",
+    "typescript": "^5.1.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JairusSW/Retrograde.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/JairusSW/Retrograde/issues"
+  },
+  "homepage": "https://github.com/JairusSW/Retrograde#readme"
+}
