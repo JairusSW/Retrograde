@@ -21,7 +21,7 @@ var Renderer = /** @class */ (function () {
         this.gl.shaderSource(this.vertex_shader, "\n        attribute vec2 vertex_position;\n        void main(void) {\n            gl_Position = vec4(vertex_position, 0.0, 1.0);\n        }");
         this.gl.compileShader(this.vertex_shader);
         this.fragment_shader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
-        this.gl.shaderSource(this.fragment_shader, "\n        void main() {\n            gl_FragColor = vec4(1.0, 0.5, 0.313, 1.0);\n        }");
+        this.gl.shaderSource(this.fragment_shader, "\n        precision mediump float;\n        uniform vec4 color;\n        void main() {\n            gl_FragColor = color;\n        }");
         this.gl.compileShader(this.fragment_shader);
         this.program = this.gl.createProgram();
         this.gl.attachShader(this.program, this.vertex_shader);
@@ -29,6 +29,7 @@ var Renderer = /** @class */ (function () {
         this.gl.linkProgram(this.program);
         this.position_attribute_location = this.gl.getAttribLocation(this.program, "vertex_position");
         this.gl.enableVertexAttribArray(this.position_attribute_location);
+        this.color_uniform_location = this.gl.getUniformLocation(this.program, "color");
         this.gl.canvas.width = screen.width;
         this.gl.canvas.height = screen.height;
         this.gl.viewport(0, 0, this.screen.width, this.screen.height);
@@ -43,7 +44,11 @@ var Renderer = /** @class */ (function () {
     Renderer.prototype.clearToColor = function (red, blue, green, alpha) {
         this.gl.clearColor(red, green, blue, alpha);
     };
-    Renderer.prototype.drawRect = function (x, y, width, height) {
+    Renderer.prototype.drawRect = function (x, y, width, height, red, green, blue, alpha) {
+        if (red === void 0) { red = 0; }
+        if (green === void 0) { green = 0; }
+        if (blue === void 0) { blue = 0; }
+        if (alpha === void 0) { alpha = 1; }
         var data_buffer = this.gl.createBuffer();
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, data_buffer);
         this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array([
@@ -54,6 +59,7 @@ var Renderer = /** @class */ (function () {
         ]), this.gl.STATIC_DRAW);
         this.gl.vertexAttribPointer(this.position_attribute_location, 2, this.gl.FLOAT, false, 0, 0);
         this.gl.useProgram(this.program);
+        this.gl.uniform4f(this.color_uniform_location, red, green, blue, alpha);
         this.gl.drawArrays(this.gl.TRIANGLE_FAN, 0, 4);
         this.gl.deleteBuffer(data_buffer);
     };
