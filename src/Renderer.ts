@@ -17,6 +17,7 @@ export class Screen {
 }
 
 export class Renderer {
+    static SN: Renderer | null;
     public screen: Screen;
     public gl: WebGLRenderingContext;
 
@@ -26,6 +27,7 @@ export class Renderer {
     private position_attribute_location: number;
     private color_uniform_location: WebGLUniformLocation;
     constructor(screen: Screen) {
+        if (!Renderer.SN) Renderer.SN = this;
         this.screen = screen;
         this.gl = screen.canvas.getContext("webgl") as WebGLRenderingContext;
         this.vertex_shader = this.gl.createShader(this.gl.VERTEX_SHADER) as WebGLShader;
@@ -58,7 +60,7 @@ export class Renderer {
         this.gl.canvas.height = screen.height;
         this.gl.viewport(0, 0, this.screen.width, this.screen.height);
 
-        this.clearToColor(1.0, 0.0, 0.0, 1.0);
+        this.clearToColor(0.0, 0.0, 0.0, 0.0);
         this.drawRect(0, 0, 32, 32);
         this.clear();
     }
@@ -69,6 +71,42 @@ export class Renderer {
     clearToColor(red: number, blue: number, green: number, alpha: number) {
         this.gl.clearColor(red, green, blue, alpha);
     }
+    drawCircle(x: number, y: number, radius: number, red: number = 0, green: number = 0, blue: number = 0, alpha: number = 1) {
+        const segments = 50; // Number of segments to approximate the circle
+        const angleIncrement = (2 * Math.PI) / segments;
+        const vertices = [];
+    
+        // Create the vertices of the circle
+        for (let i = 0; i <= segments; i++) {
+            const angle = angleIncrement * i;
+            const vertexX = x + Math.cos(angle) * radius;
+            const vertexY = y + Math.sin(angle) * radius;
+            vertices.push(adjust_pos(this.gl.canvas.width, vertexX));
+            vertices.push(adjust_pos(this.gl.canvas.height, vertexY));
+        }
+    
+        const data_buffer = this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, data_buffer);
+        this.gl.bufferData(
+            this.gl.ARRAY_BUFFER,
+            new Float32Array(vertices),
+            this.gl.STATIC_DRAW
+        );
+    
+        this.gl.vertexAttribPointer( 
+            this.position_attribute_location,
+            2,
+            this.gl.FLOAT,
+            false,
+            0,
+            0
+        );
+    
+        this.gl.useProgram(this.program);
+        this.gl.uniform4f(this.color_uniform_location, red, green, blue, alpha);
+        this.gl.drawArrays(this.gl.TRIANGLE_FAN, 0, segments + 2);
+        this.gl.deleteBuffer(data_buffer);
+    }    
     drawRect(x: number, y: number, width: number, height: number, red: number = 0, green: number = 0, blue: number = 0, alpha: number = 1) {
         const data_buffer = this.gl.createBuffer();
         this.gl.bindBuffer(this.gl.ARRAY_BUFFER, data_buffer);
@@ -87,7 +125,9 @@ export class Renderer {
             this.position_attribute_location,
             2,
             this.gl.FLOAT,
-            false, 0, 0
+            false,
+            0,
+            0
         );
 
         this.gl.useProgram(this.program);
