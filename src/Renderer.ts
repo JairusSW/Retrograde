@@ -49,6 +49,14 @@ const FRAG_SHADER = /*glsl*/ `#version 300 es
     color = c;
   }
 `;
+
+export enum RENDER_TYPE {
+  POINTS = 0x0000,
+  LINES = 0x0001,
+  LINE_LOOP = 0x0002,
+  LINE_STRIP = 0x0003,
+}
+
 export class Screen {
   public height: number;
   public width: number;
@@ -67,7 +75,7 @@ export class Screen {
 
 export class Renderer {
   public screen: Screen;
-  public gl: WebGLRenderingContext;
+  public gl: WebGL2RenderingContext;
   public buffer: WebGLBuffer;
 
   private line_shader: WebGLShader;
@@ -82,12 +90,16 @@ export class Renderer {
   private position_al: number;
   constructor(screen: Screen) {
     this.screen = screen;
-    this.gl = screen.canvas.getContext("webgl2") as WebGLRenderingContext;
-    this.line_shader = this.gl.createShader(this.gl.VERTEX_SHADER) as WebGLShader;
+    this.gl = screen.canvas.getContext("webgl2") as WebGL2RenderingContext;
+    this.line_shader = this.gl.createShader(
+      this.gl.VERTEX_SHADER
+    ) as WebGLShader;
     this.gl.shaderSource(this.line_shader, VECTOR_COLOR_LINE_SHADER);
     this.gl.compileShader(this.line_shader);
 
-    this.fragment_shader = this.gl.createShader(this.gl.FRAGMENT_SHADER) as WebGLShader;
+    this.fragment_shader = this.gl.createShader(
+      this.gl.FRAGMENT_SHADER
+    ) as WebGLShader;
     this.gl.shaderSource(this.fragment_shader, FRAG_SHADER);
     this.gl.compileShader(this.fragment_shader);
 
@@ -97,42 +109,64 @@ export class Renderer {
     this.gl.attachShader(this.program, this.fragment_shader);
 
     this.gl.linkProgram(this.program);
-
     this.gl.useProgram(this.program);
 
-    this.color_location = this.gl.getUniformLocation(this.program, "u_color") as WebGLUniformLocation;
-    this.scale_x_location = this.gl.getUniformLocation(this.program, "u_scale_x") as WebGLUniformLocation;
-    this.scale_y_location = this.gl.getUniformLocation(this.program, "u_scale_y") as WebGLUniformLocation;
-    this.rotation_location = this.gl.getUniformLocation(this.program, "u_rotation") as WebGLUniformLocation;
-    this.offset_x_location = this.gl.getUniformLocation(this.program, "u_loop_x") as WebGLUniformLocation;
-    this.offset_y_location = this.gl.getUniformLocation(this.program, "u_loop_y") as WebGLUniformLocation;
+    this.color_location = this.gl.getUniformLocation(
+      this.program,
+      "u_color"
+    ) as WebGLUniformLocation;
+    this.scale_x_location = this.gl.getUniformLocation(
+      this.program,
+      "u_scale_x"
+    ) as WebGLUniformLocation;
+    this.scale_y_location = this.gl.getUniformLocation(
+      this.program,
+      "u_scale_y"
+    ) as WebGLUniformLocation;
+    this.rotation_location = this.gl.getUniformLocation(
+      this.program,
+      "u_rotation"
+    ) as WebGLUniformLocation;
+    this.offset_x_location = this.gl.getUniformLocation(
+      this.program,
+      "u_loop_x"
+    ) as WebGLUniformLocation;
+    this.offset_y_location = this.gl.getUniformLocation(
+      this.program,
+      "u_loop_y"
+    ) as WebGLUniformLocation;
 
     this.buffer = this.gl.createBuffer() as WebGLBuffer;
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this.buffer);
 
     this.position_al = this.gl.getAttribLocation(this.program, "position");
     this.gl.enableVertexAttribArray(this.position_al);
+
     this.gl.canvas.width = screen.width;
     this.gl.canvas.height = screen.height;
-    this.gl.viewport(0, 0, this.screen.width, this.screen.height);
-
-    this.clearToColor(0.0, 0.0, 0.0, 0.0);
-    this.renderRect(0, 0, 32, 32);
-    this.clear();
   }
   clear() {
-    // Clear color from canvas
+    this.gl.clearColor(0.0, 0.0, 0.0, 1.0);
     this.gl.clear(this.gl.COLOR_BUFFER_BIT);
   }
   clearToColor(red: number, blue: number, green: number, alpha: number) {
     this.gl.clearColor(red, green, blue, alpha);
   }
-  renderLine(line: Float32Array, len, x, y, rot, scale_x, scale_y, color: number, type) {
+  renderLine(
+    line: Float32Array,
+    x: number,
+    y: number,
+    rot: number,
+    scale_x: number,
+    scale_y: number,
+    color: number,
+    type: RENDER_TYPE
+  ) {
     this.gl.bufferData(this.gl.ARRAY_BUFFER, line, this.gl.DYNAMIC_DRAW);
 
-    this.gl.uniform1i(this.color_location, color);
+    this.gl.uniform1ui(this.color_location, color);
     this.gl.uniform1f(this.scale_x_location, scale_x);
-    this.gl.uniform1f(this.scale_y_location, scale_y); // 0x00_ff_00_ff
+    this.gl.uniform1f(this.scale_y_location, scale_y);
     this.gl.uniform1f(this.rotation_location, rot);
     this.gl.uniform1f(this.offset_x_location, x);
     this.gl.uniform1f(this.offset_y_location, y);
@@ -147,66 +181,6 @@ export class Renderer {
     );
 
     this.gl.drawArrays(type, 0, line.length / 2);
-  }
-  renderCircle(x: number, y: number, radius: number, red: number = 0, green: number = 0, blue: number = 0, alpha: number = 1) {
-    const segments = 50; // Number of segments to approximate the circle
-    const angleIncrement = (2 * Math.PI) / segments; 
-    const vertices = [];
-
-    // Create the vertices of the circle
-    for (let i = 0; i <= segments; i++) {
-      const angle = angleIncrement * i;
-      const vertexX = x + Math.cos(angle) * radius;
-      const vertexY = y + Math.sin(angle) * radius;
-      vertices.push(adjust_pos(this.gl.canvas.width, vertexX));
-      vertices.push(adjust_pos(this.gl.canvas.height, vertexY));
-    }
-
-    const data_buffer = this.gl.createBuffer();
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, data_buffer);
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
-
-    this.gl.vertexAttribPointer(this.position_attribute_location, 2, this.gl.FLOAT, false, 0, 0);
-
-    this.gl.useProgram(this.program);
-    this.gl.uniform4f(this.color_uniform_location, red, green, blue, alpha);
-    this.gl.drawArrays(this.gl.TRIANGLE_FAN, 0, segments + 2);
-    this.gl.deleteBuffer(data_buffer);
-  }
-  renderRect(
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-    red: number = 0,
-    green: number = 0,
-    blue: number = 0,
-    alpha: number = 1
-  ) {
-    const data_buffer = this.gl.createBuffer();
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, data_buffer);
-
-    this.gl.bufferData(
-      this.gl.ARRAY_BUFFER,
-      new Float32Array([
-        adjust_pos(this.gl.canvas.width, x),
-        adjust_pos(this.gl.canvas.height, y),
-        adjust_pos(this.gl.canvas.width, x + width),
-        adjust_pos(this.gl.canvas.height, y),
-        adjust_pos(this.gl.canvas.width, x + width),
-        adjust_pos(this.gl.canvas.height, y + height),
-        adjust_pos(this.gl.canvas.width, x),
-        adjust_pos(this.gl.canvas.height, y + height)
-      ]),
-      this.gl.STATIC_DRAW
-    );
-
-    this.gl.vertexAttribPointer(this.position_attribute_location, 2, this.gl.FLOAT, false, 0, 0);
-
-    this.gl.useProgram(this.program);
-    this.gl.uniform4f(this.color_uniform_location, red, green, blue, alpha);
-    this.gl.drawArrays(this.gl.TRIANGLE_FAN, 0, 4);
-    this.gl.deleteBuffer(data_buffer);
   }
 }
 

@@ -16,11 +16,12 @@ var Retrograde = /** @class */ (function () {
     Retrograde.prototype.removeEntity = function (entity) {
         this.entities.splice(this.entities.findIndex(function (v) { return v.id === entity.id; }), 1);
     };
-    Retrograde.prototype.renderAll = function () {
+    Retrograde.prototype.drawAll = function () {
+        this.renderer.clear();
         for (var _i = 0, _a = this.entities; _i < _a.length; _i++) {
             var entity = _a[_i];
             if (entity.visible) {
-                entity.render();
+                entity.draw();
             }
         }
     };

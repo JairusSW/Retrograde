@@ -4,18 +4,14 @@ import { Color } from "./Color";
 
 // Grug say all global be unsafe
 let idCount = 0;
-export class Entity {
+export abstract class Entity {
     public id: number;
-    public height: number;
-    public width: number;
     public scale: number;
     public pos: Position;
-    public color: Color;
+    public color: number;
     public visible: boolean;
     
-    constructor(height: number, width: number, scale: number, pos: Position, color: Color, visible: boolean = true) {
-        this.height = height;
-        this.width = width;
+    constructor(scale: number, pos: Position, color: number, visible: boolean = true) {
         this.scale = scale;
         this.pos = pos;
         this.color = color;
@@ -23,5 +19,5 @@ export class Entity {
         this.id = ++idCount;
     }
 
-    render() {}
+    abstract draw(): void;
 }
