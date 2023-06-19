@@ -30,7 +30,7 @@ var red = 0;
 var green = 0;
 var blue = 0;
 var toggle = 0;
-function animate(rect) {
+function animate(entity) {
     if (toggle === 0) {
         red += 0.1;
         if (red >= 1) {
@@ -67,11 +67,11 @@ function animate(rect) {
             toggle = 0;
         }
     }
-    rect.color.red = red;
-    rect.color.blue = blue;
-    rect.color.green = green;
+    entity.color.red = red;
+    entity.color.blue = blue;
+    entity.color.green = green;
     requestAnimationFrame(function () {
-        rect.draw();
-        animate(rect);
+        entity.render();
+        animate(entity);
     });
 }

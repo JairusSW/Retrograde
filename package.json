@@ -5,8 +5,10 @@
   "contributors": [],
   "license": "MIT",
   "scripts": {
-    "build:dev": "tsc -w & webpack-dev-server --mode development",
-    "build:release": "tsc & webpack --mode production"
+    "dev": "tsc -w",
+    "serve": "webpack-dev-server --mode development",
+    "build:release": "tsc",
+    "serve:relese": "webpack --mode production"
   },
   "devDependencies": {
     "html-webpack-plugin": "^5.5.1",

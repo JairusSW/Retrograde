@@ -13,17 +13,15 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+import { Retrograde } from "../Retrograde";
 import { Entity } from "./Entity";
-import { ShapeType } from "./ShapeType";
 var RectEntity = /** @class */ (function (_super) {
     __extends(RectEntity, _super);
-    function RectEntity(renderer, height, width, scale, pos, color) {
-        var _this = _super.call(this, renderer, height, width, scale, pos, ShapeType.Rect) || this;
-        _this.color = color;
-        return _this;
+    function RectEntity(height, width, scale, pos, color) {
+        return _super.call(this, height, width, scale, pos, color) || this;
     }
-    RectEntity.prototype.draw = function () {
-        this.renderer.drawRect(this.pos.x, this.pos.y, this.width, this.height, this.color.red, this.color.green, this.color.blue, this.color.alpha);
+    RectEntity.prototype.render = function () {
+        Retrograde.SN.renderer.renderRect(this.pos.x, this.pos.y, this.width, this.height, this.color.red, this.color.green, this.color.blue, this.color.alpha);
     };
     return RectEntity;
 }(Entity));

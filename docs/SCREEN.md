@@ -1,0 +1,1 @@
+Cartesian coordinate system. 512x512 scalable. center is (0, 0) +-256

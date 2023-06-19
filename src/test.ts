@@ -1,5 +1,6 @@
 import { Screen, Renderer } from "./Renderer";
 import { Key } from "./Key";
+import { Entity } from "./ECS/Entity";
 import { RectEntity } from "./ECS/RectEntity";
 import { CircleEntity } from "./ECS/CircleEntity";
 import { Position } from "./Position";
@@ -40,7 +41,7 @@ let blue = 0;
 let toggle = 0;
 
 
-function animate(rect: RectEntity) {
+function animate(entity: Entity) {
   if (toggle === 0) {
     red += 0.1;
     if (red >= 1) {
@@ -77,11 +78,11 @@ function animate(rect: RectEntity) {
       toggle = 0;
     }
   }
-  rect.color.red = red;
-  rect.color.blue = blue;
-  rect.color.green = green;
+  entity.color.red = red;
+  entity.color.blue = blue;
+  entity.color.green = green;
   requestAnimationFrame(() => {
-    rect.draw();
-    animate(rect);
+    entity.render();
+    animate(entity);
   });
 }

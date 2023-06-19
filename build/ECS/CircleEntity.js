@@ -13,18 +13,17 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+import { Retrograde } from "../Retrograde";
 import { Entity } from "./Entity";
-import { ShapeType } from "./ShapeType";
 var CircleEntity = /** @class */ (function (_super) {
     __extends(CircleEntity, _super);
-    function CircleEntity(renderer, radius, scale, pos, color) {
-        var _this = _super.call(this, renderer, radius * 2, radius * 2, scale, pos, ShapeType.Rect) || this;
+    function CircleEntity(radius, scale, pos, color) {
+        var _this = _super.call(this, radius * 2, radius * 2, scale, pos, color) || this;
         _this.radius = radius;
-        _this.color = color;
         return _this;
     }
-    CircleEntity.prototype.draw = function () {
-        this.renderer.drawCircle(this.pos.x, this.pos.y, this.radius, this.color.red, this.color.green, this.color.blue, this.color.alpha);
+    CircleEntity.prototype.render = function () {
+        Retrograde.SN.renderer.renderCircle(this.pos.x, this.pos.y, this.radius, this.color.red, this.color.green, this.color.blue, this.color.alpha);
     };
     return CircleEntity;
 }(Entity));
