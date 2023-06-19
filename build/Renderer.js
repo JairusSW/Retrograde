@@ -15,6 +15,8 @@ var Screen = /** @class */ (function () {
 export { Screen };
 var Renderer = /** @class */ (function () {
     function Renderer(screen) {
+        if (!Renderer.SN)
+            Renderer.SN = this;
         this.screen = screen;
         this.gl = screen.canvas.getContext("webgl");
         this.vertex_shader = this.gl.createShader(this.gl.VERTEX_SHADER);
@@ -33,7 +35,7 @@ var Renderer = /** @class */ (function () {
         this.gl.canvas.width = screen.width;
         this.gl.canvas.height = screen.height;
         this.gl.viewport(0, 0, this.screen.width, this.screen.height);
-        this.clearToColor(1.0, 0.0, 0.0, 1.0);
+        this.clearToColor(0.0, 0.0, 0.0, 0.0);
         this.drawRect(0, 0, 32, 32);
         this.clear();
     }
@@ -43,6 +45,31 @@ var Renderer = /** @class */ (function () {
     };
     Renderer.prototype.clearToColor = function (red, blue, green, alpha) {
         this.gl.clearColor(red, green, blue, alpha);
+    };
+    Renderer.prototype.drawCircle = function (x, y, radius, red, green, blue, alpha) {
+        if (red === void 0) { red = 0; }
+        if (green === void 0) { green = 0; }
+        if (blue === void 0) { blue = 0; }
+        if (alpha === void 0) { alpha = 1; }
+        var segments = 50; // Number of segments to approximate the circle
+        var angleIncrement = (2 * Math.PI) / segments;
+        var vertices = [];
+        // Create the vertices of the circle
+        for (var i = 0; i <= segments; i++) {
+            var angle = angleIncrement * i;
+            var vertexX = x + Math.cos(angle) * radius;
+            var vertexY = y + Math.sin(angle) * radius;
+            vertices.push(adjust_pos(this.gl.canvas.width, vertexX));
+            vertices.push(adjust_pos(this.gl.canvas.height, vertexY));
+        }
+        var data_buffer = this.gl.createBuffer();
+        this.gl.bindBuffer(this.gl.ARRAY_BUFFER, data_buffer);
+        this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(vertices), this.gl.STATIC_DRAW);
+        this.gl.vertexAttribPointer(this.position_attribute_location, 2, this.gl.FLOAT, false, 0, 0);
+        this.gl.useProgram(this.program);
+        this.gl.uniform4f(this.color_uniform_location, red, green, blue, alpha);
+        this.gl.drawArrays(this.gl.TRIANGLE_FAN, 0, segments + 2);
+        this.gl.deleteBuffer(data_buffer);
     };
     Renderer.prototype.drawRect = function (x, y, width, height, red, green, blue, alpha) {
         if (red === void 0) { red = 0; }
